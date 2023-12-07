@@ -3,7 +3,7 @@ library(tidyverse)
 library(reshape2)
 library(ggplot2)
 
-outFolder="6_celltype_cor_heatmap_plot/"
+outFolder="6_celltype_cor_heatmap_plot_Roger/"
 system(paste0("mkdir -p ", outFolder))
 
 # cell type labels
@@ -33,8 +33,13 @@ res<-res  %>% filter (kbid %in% de_gene)
 res <- res %>% separate(cname,c("Location","Cluster","Origin"),sep="_",remove=FALSE)
 res$Cell_type<-clust2Names[res$Cluster]
 res$cname<-paste0(res$Cell_type,"_",res$Location,"_",res$Origin)  
-#clusters<-unique(res_de$cname)
-clusters<-unique(res$cname)
+### RPR changed this line. I think this will solve the problem of not getting the same plot. 
+##clusters<-unique(res_de$cname)
+###clusters<-unique(res$cname)
+### RPR 2023/02/21 Additionally changed this to remove small clusters. 
+tt <- table(res_de$cname)
+clusters <- names(which(tt>10))
+
 # clusters_location<-sapply(clusters,function(x){
 #   y<-unlist(strsplit(x,"_"))
 #   return(y[length(y)])
@@ -74,7 +79,7 @@ write_rds(cor_matrix,file=paste0(outFolder,"cor_matrix_all.rds"))
 library(pheatmap)
 
 fname=paste0(outFolder,"heatmap_celltype_cor.pdf");
-pdf(fname,width=15,height=15)
+pdf(fname,width=8,height=8)
 paletteLength<-50
 my_palette <- colorRampPalette(colors = c("#E8F4F8","white", "#A50021"))(n = paletteLength)
 myBreaks <- c(seq(min(cor_matrix), 0, length.out=ceiling(paletteLength/2) ), 
@@ -83,7 +88,7 @@ myBreaks <- c(seq(min(cor_matrix), 0, length.out=ceiling(paletteLength/2) ),
 #myBreaks <- c(seq( min(cor_matrix),0,length.out=20), seq(0,max(cor_matrix), length.out=30) )
 
 
-pheatmap(cor_matrix,cluster_rows=TRUE,color=my_palette,scale="none",breaks=myBreaks,fontsize=10)
+pheatmap(cor_matrix,cluster_rows=TRUE,color=my_palette,scale="none",breaks=myBreaks,fontsize=12)
 dev.off()
 
 
